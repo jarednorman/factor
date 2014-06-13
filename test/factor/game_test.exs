@@ -8,22 +8,25 @@ defmodule FactorGameTest do
 
   test "you can add moves" do
     game = Factor.Game.new
-    move = {:playername, 10}
-    game = Factor.Game.add_move(game, move)
-    assert Factor.Game.get_moves(game) == [{:playername, 10}]
+    game = Factor.Game.add_move(game, :cave, 10)
+    assert Factor.Game.get_moves(game) == [ { :cave, 10 } ]
   end
 
   test "you can take multiple turns" do
-    move_one = {:playername, 10}
-    move_two = {:cave_johnson, 30}
-    move_three = {:john_hawthorn, 80}
     game = Factor.Game.new
-      |> Factor.Game.add_move(move_one)
+      |> Factor.Game.add_move(:playername, 10)
       |> Factor.Game.end_turn
-      |> Factor.Game.add_move(move_two)
-      |> Factor.Game.add_move(move_three)
+      |> Factor.Game.add_move(:cave_johnson, 30)
+      |> Factor.Game.add_move(:john_hawthorn, 80)
     assert Factor.Game.get_moves(game) == [
-      {:john_hawthorn, 80}, {:cave_johnson, 30}
+      { :john_hawthorn, 80 }, { :cave_johnson, 30 }
     ]
+  end
+
+  test "it can determine the current winner" do
+    game = Factor.Game.new
+      |> Factor.Game.add_move(:cave_johnson, 30)
+      |> Factor.Game.add_move(:john_hawthorn, 80)
+    assert Factor.Game.winner(game) == { :john_hawthorn, 80 }
   end
 end

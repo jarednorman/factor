@@ -11,25 +11,28 @@ defmodule Factor.Worker do
   end
 
   def handle_call(:new_game, _from, game_list) do
-    { :reply, 1, [ new_game(game_list) | game_list ] }
+    game = new_game(game_list)
+    { id, _ } = game
+    { :reply, id, [ new_game(game_list) | game_list ] }
   end
 
-  def handle_call({ :end_turn, _game }, _from, game_list) do
-    { :reply, :player_two, game_list }
+  def handle_call({ :end_turn, id }, _from, game_list) do
+    game = get_game(game_list, id)
+    { winner, _move } = Factor.Game.winner(game)
+    game = Factor.Game.end_turn(game)
+    { :reply, winner, game_list }
   end
 
-  def handle_cast({ :take_turn, id, player, turn }, game_list) do
-    new_turn = { player, turn }
-    IO.puts game_list
-    { _id, _turns } = get_game(game_list, id)
-    { :noreply, game_list }
+  def handle_cast({ :add_move, id, player, turn }, game_list) do
+    game = get_game(game_list, id)
+      |> Factor.Game.add_move(player, turn)
+    { :noreply, update_game(game_list, id, game) }
   end
 
   # Private
   defp new_game(game_list) do
     id = unique_id(game_list)
-    turns = [ [] ]
-    { id, turns }
+    { id, Factor.Game.new }
   end
 
   defp unique_id([]), do: 0
@@ -39,15 +42,16 @@ defmodule Factor.Worker do
       |> Enum.max()) + 1
   end
 
-  defp update_game(game_list, id, state) do
-    [ { id, state } | Enum.reject(game_list, fn({ game_id, _ })->
+  defp update_game(game_list, id, game) do
+    [ { id, game } | Enum.reject(game_list, fn({ game_id, _ })->
         game_id == id
       end) ]
   end
 
   defp get_game(game_list, id) do
-    Enum.find(game_list, fn({ game_id, _turns })->
-      game_id == id 
+    { _id, game } = Enum.find(game_list, fn({ game_id, _game })->
+      game_id == id
     end)
+    game
   end
 end

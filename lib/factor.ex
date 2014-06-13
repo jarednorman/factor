@@ -12,8 +12,8 @@ defmodule Factor do
     GenServer.call(:factor, :new_game)
   end
 
-  def take_turn(game, player, turn) do
-    GenServer.cast(:factor, { :take_turn, game, player, turn })
+  def add_move(game, player, turn) do
+    GenServer.cast(:factor, { :add_move, game, player, turn })
   end
 
   def end_turn(game) do
