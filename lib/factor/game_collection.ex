@@ -17,12 +17,9 @@ defmodule Factor.GameCollection do
   end
 
   def update_game(collection, id, new_game) do
-    Enum.map(collection, fn({ game_id, game }) ->
-      if game_id == id do
-        { id, new_game }
-      else
-        { game_id, game }
-      end
+    Enum.map(collection, fn
+      ({ game_id, _ }) when game_id == id -> { game_id, new_game }
+      (entry) -> entry
     end)
   end
 
